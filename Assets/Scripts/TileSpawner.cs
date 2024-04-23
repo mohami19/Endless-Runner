@@ -5,13 +5,13 @@ namespace EndlessRun
 {
     public class TileSpawner : MonoBehaviour
     {
-        [SerializeField] float spawnChance = 0.2f;
-        [SerializeField] int tileStartCount = 10;
-        [SerializeField] int minimumStraightTiles = 3;
-        [SerializeField] int maximumStraightTiles = 15;
-        [SerializeField] GameObject startingTile;
-        [SerializeField] List<GameObject> turnTiles;
-        [SerializeField] List<GameObject> obstacles;
+        [SerializeField] private float spawnChance = 0.2f;
+        [SerializeField] private int tileStartCount = 10;
+        [SerializeField] private int minimumStraightTiles = 3;
+        [SerializeField] private int maximumStraightTiles = 15;
+        [SerializeField] private GameObject startingTile;
+        [SerializeField] private List<GameObject> turnTiles;
+        [SerializeField] private List<GameObject> obstacles;
 
         Vector3 currentTileLocation = Vector3.zero;
         Vector3 currentTileDirection = Vector3.forward;
