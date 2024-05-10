@@ -112,6 +112,7 @@ namespace EndlessRun.Player
 
         private void PlayerSlide(InputAction.CallbackContext context)
         {
+            Debug.Log("Player is sliding");
             if (sliding && IsGrounded())
             {
                 StartCoroutine(Slide());    
@@ -141,6 +142,7 @@ namespace EndlessRun.Player
         {
             if (IsGrounded())
             {
+                Debug.Log(jumpHeight * gravity * -3f);
                 playerVelocity.y += Mathf.Sqrt(jumpHeight * gravity * -3f);
                 controller.Move(playerVelocity * Time.deltaTime);
             }
@@ -154,7 +156,7 @@ namespace EndlessRun.Player
             {
                 playerVelocity.y = 0f;
             }
-            playerVelocity.y += gravity + Time.deltaTime;
+            playerVelocity.y += gravity * Time.deltaTime;
             controller.Move(playerVelocity * Time.deltaTime);
 
         }
