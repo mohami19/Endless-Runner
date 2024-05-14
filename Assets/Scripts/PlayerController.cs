@@ -42,6 +42,7 @@ namespace EndlessRun.Player
         {
             playerInput = GetComponent<PlayerInput>();
             controller = GetComponent<CharacterController>();
+                        
             slidingAnimationId = Animator.StringToHash("Sliding");
 
             turnAction = playerInput.actions["Turn"];
@@ -113,7 +114,7 @@ namespace EndlessRun.Player
         private void PlayerSlide(InputAction.CallbackContext context)
         {
             Debug.Log("Player is sliding");
-            if (sliding && IsGrounded())
+            if (!sliding && IsGrounded())
             {
                 StartCoroutine(Slide());    
             }
