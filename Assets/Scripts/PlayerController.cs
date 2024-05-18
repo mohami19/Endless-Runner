@@ -6,22 +6,23 @@ using UnityEngine.InputSystem;
 namespace EndlessRun.Player
 {
     [RequireComponent(typeof(CharacterController), typeof(PlayerInput))]
-    public class PlayerController : MonoBehaviour
-    {
+    public class PlayerController : MonoBehaviour {
         // Start is called before the first frame update
 
-        [SerializeField] private float initialSpeed = 4f;
+        [SerializeField] private float initialSpeed = 8f;
         [SerializeField] private float maxSpeed = 30f;
         [SerializeField] private float speedIncreaseRate = .1f;
-        [SerializeField] private float jumpHeight = 1.0f;
+        [SerializeField] private float jumpHeight = 1.3f;
         [SerializeField] private float initialGravityValue = -9.81f;
         [SerializeField] private LayerMask groundLayer;
         [SerializeField] private LayerMask turnLayer; 
+        [SerializeField] private LayerMask obstacleLayer;
         [SerializeField] private Animator animator;
         [SerializeField] private AnimationClip slideAnimationClip;
 
 
-        private float playerSpeed;
+        [SerializeField] private float playerSpeed;
+        [SerializeField] private float scoreMultiplier = 10f;
         private float gravity;
         private Vector3 movementDirection = Vector3.forward;
         private Vector3 playerVelocity;
@@ -35,11 +36,12 @@ namespace EndlessRun.Player
         private int slidingAnimationId;
 
         private bool sliding = false;
-
+        private float score = 0;
         [SerializeField] private UnityEvent<Vector3> turnEvent;
+        [SerializeField] private UnityEvent<int> gameOverEvent;
+        [SerializeField] private UnityEvent<int> scoreUpdateEvent;
 
-        private void Awake()
-        {
+        private void Awake() {
             playerInput = GetComponent<PlayerInput>();
             controller = GetComponent<CharacterController>();
                         
@@ -50,30 +52,27 @@ namespace EndlessRun.Player
             slideAction = playerInput.actions["Slide"];
         }
 
-        private void OnEnable()
-        {
+        private void OnEnable() {
             turnAction.performed += PlayerTurn;
             slideAction.performed += PlayerSlide;
             jumpAction.performed += PlayerJump;
         }
-        private void OnDisable()
-        {
+        private void OnDisable() {
             turnAction.performed -= PlayerTurn;
             slideAction.performed -= PlayerSlide;
             jumpAction.performed -= PlayerJump;
         }
 
-        void Start()
-        {
+        void Start() {
             playerSpeed = initialSpeed;
             gravity = initialGravityValue;
         }
 
-        private void PlayerTurn(InputAction.CallbackContext context)
-        {
+        private void PlayerTurn(InputAction.CallbackContext context) {
             Vector3? turnPosition =  CheckTurn(context.ReadValue<float>());
             if (!turnPosition.HasValue)
             {
+                GameOver();
                 return;
             }
             Vector3 targetDirection = Quaternion.AngleAxis(90 * context.ReadValue<float>(),Vector3.up) *
@@ -84,8 +83,7 @@ namespace EndlessRun.Player
 
         }
 
-        private Vector3? CheckTurn(float turnValue) 
-        {
+        private Vector3? CheckTurn(float turnValue) {
             Collider[] hitColliders = Physics.OverlapSphere(transform.position, .1f, turnLayer);
             if (hitColliders.Length != 0) {
                 Tile tile =hitColliders[0].transform.parent.GetComponent<Tile>();
@@ -100,7 +98,7 @@ namespace EndlessRun.Player
             return null;
         }
 
-        private void Turn(float turnValue,Vector3 turnPosition){
+        private void Turn(float turnValue,Vector3 turnPosition) {
             Vector3 tempPlayerPosition = new Vector3(turnPosition.x,turnPosition.y,turnPosition.z);
             controller.enabled = false;
             transform.position = tempPlayerPosition;
@@ -111,16 +109,17 @@ namespace EndlessRun.Player
             movementDirection = transform.forward.normalized;
         }
 
-        private void PlayerSlide(InputAction.CallbackContext context)
-        {
-            Debug.Log("Player is sliding");
+        private void PlayerSlide(InputAction.CallbackContext context) {
+            
             if (!sliding && IsGrounded())
             {
                 StartCoroutine(Slide());    
             }
+
         }
     
-        private IEnumerator Slide(){
+        private IEnumerator Slide() {
+
             sliding = true;
 
             Vector3 originalControllerCenter = controller.center;
@@ -139,19 +138,26 @@ namespace EndlessRun.Player
 
         }
     
-        private void PlayerJump(InputAction.CallbackContext context)
-        {
+        private void PlayerJump(InputAction.CallbackContext context) {
+
             if (IsGrounded())
             {
-                Debug.Log(jumpHeight * gravity * -3f);
                 playerVelocity.y += Mathf.Sqrt(jumpHeight * gravity * -3f);
                 controller.Move(playerVelocity * Time.deltaTime);
             }
         }
 
         // Update is called once per frame
-        void Update()
-        {
+        void Update() {
+
+            if (!IsGrounded(20f)){
+                GameOver();
+                return;
+            }
+
+            score += scoreMultiplier * Time.deltaTime;
+            scoreUpdateEvent.Invoke((int)score);
+
             controller.Move(transform.forward * playerSpeed * Time.deltaTime);
             if (IsGrounded() && playerVelocity.y < 0)
             {
@@ -162,8 +168,8 @@ namespace EndlessRun.Player
 
         }
 
-        private bool IsGrounded(float length = .2f)
-        {
+        private bool IsGrounded(float length = .2f) {
+            
             Vector3 raycastOriginFirst = transform.position;
             raycastOriginFirst.y -= controller.height / 2f;
             raycastOriginFirst.y += .1f;
@@ -178,6 +184,20 @@ namespace EndlessRun.Player
                 return true;
             }
             return false;
+        
+        }
+
+        private void GameOver() {
+            Debug.Log("Game over");
+            gameOverEvent.Invoke((int)score);
+            gameObject.SetActive(false);
+        }
+
+        private void OnControllerColliderHit(ControllerColliderHit hit) {
+        
+            if(((1 <<hit.collider.gameObject.layer) & obstacleLayer) != 0){
+                GameOver();    
+            }
         }
     }
 }
