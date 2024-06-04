@@ -2,10 +2,14 @@ using System.Collections;
 using UnityEngine;
 using LootLocker.Requests;
 using TMPro;
+using UnityEngine.SceneManagement;
+
+
 public class GameOver : MonoBehaviour
 {
-    [SerializeField] private GameObject gameOverCanvas;
+    [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] TMP_InputField inputField;
+
     [SerializeField] TextMeshProUGUI leaderBoardScoreText;
     [SerializeField] TextMeshProUGUI leaderBoardNameText;
 
@@ -13,24 +17,20 @@ public class GameOver : MonoBehaviour
     private string leaderBoardID = "22337";
     private int leaderBoardTopCount = 10;
     public void StopGame(int score){
-        gameOverCanvas.SetActive(true);
         this.score = score;
-        SubmitScore();
-    }
-    
-    public void RestartLevel(int score){
-
+        scoreText.text = score.ToString();
+        GetLeaderBoard();
     }
     
     public void SubmitScore(){
         StartCoroutine(SubmitScoreToLeaderBoard(score));
     }
     
-    private IEnumerable SubmitScoreToLeaderBoard(){
+    private IEnumerator SubmitScoreToLeaderBoard(int score){
         bool? nameSet = null;
-        LootLockerSDKManager.SetPlayerName(inputField.text, (response) =>{
+        LootLockerSDKManager.SetPlayerName(inputField.text, (response) => {
             if (response.success) {
-                Debug.Log("Successfully Set The Player name");
+                Debug.Log("Successfully Set The Player name.");
                 nameSet = true;
             } else {
                 Debug.Log("Name Not Set");
@@ -38,7 +38,7 @@ public class GameOver : MonoBehaviour
             }
         });
         yield return new WaitUntil(() => nameSet.HasValue);
-        if (!nameSet.HasValue) yield break;
+        if (!nameSet.Value) yield break;
 
         bool? scoreSubmitted = null;
         LootLockerSDKManager.SubmitScore("",score,leaderBoardID, (response) => {
@@ -51,7 +51,7 @@ public class GameOver : MonoBehaviour
             }
         });
         yield return new WaitUntil(() => scoreSubmitted.HasValue);
-        if (!scoreSubmitted.HasValue) yield break;
+        if (!scoreSubmitted.Value) yield break;
         GetLeaderBoard();
     }
 
@@ -86,6 +86,10 @@ public class GameOver : MonoBehaviour
 
     public void AddXP(int score){
 
+    }
+
+    public void ReloadScene(){
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     
 }
