@@ -5,7 +5,7 @@ using UnityEngine.Events;
 public class GameManager : MonoBehaviour
 {
     [SerializeField] private UnityEvent playerConnected;
-    private IEnumerable Start() {
+    private IEnumerator Start() {
         bool connected = false;
         LootLockerSDKManager.StartGuestSession((response => {
             if (!response.success) {

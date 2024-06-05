@@ -9,7 +9,6 @@ public class GameOver : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] TMP_InputField inputField;
-
     [SerializeField] TextMeshProUGUI leaderBoardScoreText;
     [SerializeField] TextMeshProUGUI leaderBoardNameText;
 
@@ -81,7 +80,6 @@ public class GameOver : MonoBehaviour
             }
         });
     }
-
 
 
     public void AddXP(int score){
