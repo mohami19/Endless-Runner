@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
     private IEnumerator Start() {
         bool connected = false;
         LootLockerSDKManager.StartGuestSession((response => {
+            Debug.Log(response.text);
             if (!response.success) {
                 Debug.Log("Error Starting LootLocker Session");
                 return;

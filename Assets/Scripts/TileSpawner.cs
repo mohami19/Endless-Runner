@@ -5,7 +5,7 @@ namespace EndlessRun
 {
     public class TileSpawner : MonoBehaviour
     {
-        [SerializeField] private float spawnChance = 0.2f;
+        [SerializeField] private float spawnChance = 0.3f;
         [SerializeField] private int tileStartCount = 10;
         [SerializeField] private int minimumStraightTiles = 3;
         [SerializeField] private int maximumStraightTiles = 15;

@@ -7,7 +7,6 @@ namespace EndlessRun.Player
 {
     [RequireComponent(typeof(CharacterController), typeof(PlayerInput))]
     public class PlayerController : MonoBehaviour {
-        // Start is called before the first frame update
 
         [SerializeField] private float initialSpeed = 8f;
         [SerializeField] private float maxSpeed = 30f;
@@ -63,7 +62,7 @@ namespace EndlessRun.Player
             jumpAction.performed -= PlayerJump;
         }
 
-        void Start() {
+        private void Start() {
             playerSpeed = initialSpeed;
             gravity = initialGravityValue;
         }
@@ -86,7 +85,7 @@ namespace EndlessRun.Player
         private Vector3? CheckTurn(float turnValue) {
             Collider[] hitColliders = Physics.OverlapSphere(transform.position, .1f, turnLayer);
             if (hitColliders.Length != 0) {
-                Tile tile =hitColliders[0].transform.parent.GetComponent<Tile>();
+                Tile tile = hitColliders[0].transform.parent.GetComponent<Tile>();
                 TileType type = tile.type;
 
                 if ((type == TileType.LEFT && turnValue == -1 ) || 
@@ -130,7 +129,7 @@ namespace EndlessRun.Player
             controller.center = newControllerCenter;
             
             animator.Play(slidingAnimationId);
-            yield return new WaitForSeconds(slideAnimationClip.length);
+            yield return new WaitForSeconds(slideAnimationClip.length / animator.speed);
 
             controller.height *=2;
             controller.center = originalControllerCenter;
@@ -148,12 +147,12 @@ namespace EndlessRun.Player
         }
 
         // Update is called once per frame
-        void Update() {
+        private void Update() {
 
-            if (!IsGrounded(20f)){
-                GameOver();
-                return;
-            }
+            // if (!IsGrounded(20f)){
+            //     GameOver();
+            //     return;
+            // }
 
             score += scoreMultiplier * Time.deltaTime;
             scoreUpdateEvent.Invoke((int)score);
@@ -165,6 +164,16 @@ namespace EndlessRun.Player
             }
             playerVelocity.y += gravity * Time.deltaTime;
             controller.Move(playerVelocity * Time.deltaTime);
+
+            if (playerSpeed < maxSpeed){
+                playerSpeed += Time.deltaTime * speedIncreaseRate;
+                gravity = initialGravityValue - playerSpeed;
+
+                if (animator.speed < 1.25f)
+                {
+                    animator.speed += (1/  playerSpeed) * Time.deltaTime;
+                }
+            }
 
         }
 

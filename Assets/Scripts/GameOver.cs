@@ -28,6 +28,7 @@ public class GameOver : MonoBehaviour
     private IEnumerator SubmitScoreToLeaderBoard(int score){
         bool? nameSet = null;
         LootLockerSDKManager.SetPlayerName(inputField.text, (response) => {
+            Debug.Log(response.text);
             if (response.success) {
                 Debug.Log("Successfully Set The Player name.");
                 nameSet = true;
@@ -37,7 +38,7 @@ public class GameOver : MonoBehaviour
             }
         });
         yield return new WaitUntil(() => nameSet.HasValue);
-        if (!nameSet.Value) yield break;
+        //if (!nameSet.Value) yield break;
 
         bool? scoreSubmitted = null;
         LootLockerSDKManager.SubmitScore("",score,leaderBoardID, (response) => {
@@ -62,13 +63,16 @@ public class GameOver : MonoBehaviour
                 string leaderBoardScore= "";
                 LootLockerLeaderboardMember [] members = response.items;
 
+                Debug.Log("Length  :  " + members.Length);
                 for (int i = 0; i < members.Length; i++)
                 {
                     LootLockerPlayer player = members[i].player;
                     if (player == null) continue;
-                    if (player.name == ""){
+                    if (player.name != ""){
+                        Debug.Log("Player Name In The LeaderBoard  :  " + player.name);
                         leaderBoardName += player.name +"\n";
                     } else {
+                        Debug.Log("Player ID In The LeaderBoard  :  " + player.id);
                         leaderBoardName += player.id + "\n";
                     }
                     leaderBoardScore += members[i].score + "\n";
