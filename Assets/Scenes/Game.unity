@@ -991,6 +991,7 @@ MonoBehaviour:
   slideAnimationClip: {fileID: 7400000, guid: 156739ff30d6342478124afebaf5a07e, type: 2}
   playerSpeed: 0
   scoreMultiplier: 10
+  mesh: {fileID: 179262121}
   turnEvent:
     m_PersistentCalls:
       m_Calls:
@@ -3446,7 +3447,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &2093665445
 MonoBehaviour:
   m_ObjectHideFlags: 0

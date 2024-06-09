@@ -2,6 +2,8 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
+using LootLocker;
+using LootLocker.Requests;
 
 namespace EndlessRun.Player
 {
@@ -22,6 +24,8 @@ namespace EndlessRun.Player
 
         [SerializeField] private float playerSpeed;
         [SerializeField] private float scoreMultiplier = 10f;
+        [SerializeField] private GameObject mesh;
+
         private float gravity;
         private Vector3 movementDirection = Vector3.forward;
         private Vector3 playerVelocity;
@@ -65,6 +69,28 @@ namespace EndlessRun.Player
         private void Start() {
             playerSpeed = initialSpeed;
             gravity = initialGravityValue;
+            StartCoroutine(ChangePlayerMaterial());
+        }
+
+        private IEnumerator ChangePlayerMaterial(){
+            string color = "";
+            bool? playerSkinRequest = null;
+            LootLockerSDKManager.GetSingleKeyPersistentStorage("skin",(response)=>{
+                if(response.success){
+                    Debug.Log("Successfully retrieved player Storage with value" + response.payload.value);
+                    color = response.payload.value;
+                    playerSkinRequest = true;
+                }else {
+                    Debug.Log("UnSuccessfully retrieved player Storage with value" + response.payload.value);
+                    playerSkinRequest = false;
+                }
+            });
+            yield return new WaitUntil(() => playerSkinRequest.HasValue);
+            if (playerSkinRequest.Value) {
+                if (ColorUtility.TryParseHtmlString(color, out Color newColor)){
+                    mesh.GetComponent<MeshRenderer>().material.color = newColor;
+                }
+            }
         }
 
         private void PlayerTurn(InputAction.CallbackContext context) {
@@ -149,10 +175,10 @@ namespace EndlessRun.Player
         // Update is called once per frame
         private void Update() {
 
-            // if (!IsGrounded(20f)){
-            //     GameOver();
-            //     return;
-            // }
+            if (!IsGrounded(20f)){
+                GameOver();
+                return;
+            }
 
             score += scoreMultiplier * Time.deltaTime;
             scoreUpdateEvent.Invoke((int)score);

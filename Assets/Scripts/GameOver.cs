@@ -19,6 +19,7 @@ public class GameOver : MonoBehaviour
         this.score = score;
         scoreText.text = score.ToString();
         GetLeaderBoard();
+        AddXP(score);
     }
     
     public void SubmitScore(){
@@ -28,7 +29,6 @@ public class GameOver : MonoBehaviour
     private IEnumerator SubmitScoreToLeaderBoard(int score){
         bool? nameSet = null;
         LootLockerSDKManager.SetPlayerName(inputField.text, (response) => {
-            Debug.Log(response.text);
             if (response.success) {
                 Debug.Log("Successfully Set The Player name.");
                 nameSet = true;
@@ -63,16 +63,13 @@ public class GameOver : MonoBehaviour
                 string leaderBoardScore= "";
                 LootLockerLeaderboardMember [] members = response.items;
 
-                Debug.Log("Length  :  " + members.Length);
                 for (int i = 0; i < members.Length; i++)
                 {
                     LootLockerPlayer player = members[i].player;
                     if (player == null) continue;
                     if (player.name != ""){
-                        Debug.Log("Player Name In The LeaderBoard  :  " + player.name);
                         leaderBoardName += player.name +"\n";
                     } else {
-                        Debug.Log("Player ID In The LeaderBoard  :  " + player.id);
                         leaderBoardName += player.id + "\n";
                     }
                     leaderBoardScore += members[i].score + "\n";
@@ -87,7 +84,13 @@ public class GameOver : MonoBehaviour
 
 
     public void AddXP(int score){
-
+        LootLockerSDKManager.SubmitXp(score, (response)=>{
+            if (response.success){
+                Debug.Log("Successfully Added XP");
+            } else {
+                Debug.Log("Failed To Add XP");
+            }
+        });
     }
 
     public void ReloadScene(){
