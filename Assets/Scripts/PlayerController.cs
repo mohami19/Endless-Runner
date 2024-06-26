@@ -175,10 +175,10 @@ namespace EndlessRun.Player
         // Update is called once per frame
         private void Update() {
 
-            if (!IsGrounded(20f)){
-                GameOver();
-                return;
-            }
+            // if (!IsGrounded(10f)){
+            //     GameOver();
+            //     return;
+            // }
 
             score += scoreMultiplier * Time.deltaTime;
             scoreUpdateEvent.Invoke((int)score);
