@@ -46,7 +46,7 @@ public class GameOver : MonoBehaviour
                 Debug.Log("Successfully Set The Score");
                 scoreSubmitted = true;
             } else {
-                Debug.Log("Unsuccessfully Set The Score");
+                Debug.Log("Could not Set The Score");
                 scoreSubmitted = false;
             }
         });

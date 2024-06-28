@@ -31,6 +31,10 @@ namespace EndlessRun.Player
         private Vector3 playerVelocity;
 
 
+        private Vector3 endPosition;
+        private Vector3 startPosition;
+        private float threshold = 250f;
+
         private PlayerInput playerInput;
         private InputAction turnAction;
         private InputAction jumpAction;
@@ -174,6 +178,55 @@ namespace EndlessRun.Player
 
         // Update is called once per frame
         private void Update() {
+
+            for (int i = 0; i < Input.touchCount; i++) {
+                if (Input.touches[i].phase == UnityEngine.TouchPhase.Began) {   
+                    startPosition = Input.touches[i].position;
+                    Debug.Log("Start Position is : " + startPosition);
+                }
+                if (Input.touches[i].phase == UnityEngine.TouchPhase.Ended) {   
+                    endPosition = Input.touches[i].position;
+                    Debug.Log("Start Position is : " + endPosition);
+                    Vector2 distance = endPosition - startPosition;
+                    if (distance.x > threshold) {
+                        float turnValue = 1f;
+                        Vector3? turnPosition =  CheckTurn(turnValue);
+                        if (!turnPosition.HasValue)
+                        {
+                            GameOver();
+                            return;
+                        }
+                        Vector3 targetDirection = Quaternion.AngleAxis(90 * turnValue,Vector3.up) *
+                            movementDirection;
+
+                        turnEvent.Invoke(targetDirection);
+                        Turn(turnValue,turnPosition.Value);
+                    } else if (distance.x < -threshold) {
+                        float turnValue = -1f;
+                        Vector3? turnPosition =  CheckTurn(turnValue);
+                        if (!turnPosition.HasValue)
+                        {
+                            GameOver();
+                            return;
+                        }
+                        Vector3 targetDirection = Quaternion.AngleAxis(90 * turnValue,Vector3.up) *
+                            movementDirection;
+
+                        turnEvent.Invoke(targetDirection);
+                        Turn(turnValue,turnPosition.Value);
+                    } else if (distance.y > threshold) {
+                        if (IsGrounded()) {
+                            playerVelocity.y += Mathf.Sqrt(jumpHeight * gravity * -3f);
+                            controller.Move(playerVelocity * Time.deltaTime);
+                        }
+                    } else if (distance.y < -threshold) {
+                        if (!sliding && IsGrounded()){
+                            StartCoroutine(Slide());    
+                        }
+                    }
+                }
+                
+            }
 
             // if (!IsGrounded(10f)){
             //     GameOver();
