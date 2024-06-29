@@ -19,8 +19,7 @@ namespace EndlessRun
         List<GameObject> currentTiles;
         List<GameObject> currentObstacles;
 
-        void Start()
-        {
+        void Start() {
             currentTiles = new List<GameObject>();
             currentObstacles = new List<GameObject>();
             Random.InitState(System.DateTime.Now.Millisecond);
@@ -34,8 +33,7 @@ namespace EndlessRun
             
         }
 
-        void SpawnTile(Tile tile, bool spawnObstacle = false)
-        {
+        void SpawnTile(Tile tile, bool spawnObstacle = false) {
             Quaternion newTileRotation = tile.gameObject.transform.rotation *
              Quaternion.LookRotation(currentTileDirection, Vector3.up);
             prevTile = GameObject.Instantiate(tile.gameObject, currentTileLocation, newTileRotation);
@@ -43,42 +41,34 @@ namespace EndlessRun
 
             if (spawnObstacle) SpawnObstacle(); 
 
-            if (tile.type == TileType.STRAIGHT)
-            {
+            if (tile.type == TileType.STRAIGHT) {
                 currentTileLocation += Vector3.Scale(prevTile.GetComponent<Renderer>().bounds.size, currentTileDirection);
             }
         }
 
-        void DeletePreviousTile()
-        {
-            while (currentTiles.Count != 1)
-            {
+        void DeletePreviousTile() {
+            while (currentTiles.Count != 1) {
                 GameObject tile = currentTiles[0];
                 currentTiles.RemoveAt(0);
                 Destroy(tile);
             }
 
-            while (currentObstacles.Count != 0)
-            {
+            while (currentObstacles.Count != 0) {
                 GameObject obstacle = currentObstacles[0];
                 currentObstacles.RemoveAt(0);
                 Destroy(obstacle);
             }
         }
 
-        public void AddNewDirection(Vector3 direction)
-        {
+        public void AddNewDirection(Vector3 direction) {
             currentTileDirection = direction;
             DeletePreviousTile();
 
             Vector3 tilePlacementScale;
-            if (prevTile.GetComponent<Tile>().type == TileType.SIDEWAYS)
-            {
+            if (prevTile.GetComponent<Tile>().type == TileType.SIDEWAYS) {
                 tilePlacementScale = Vector3.Scale(prevTile.GetComponent<Renderer>().bounds.size / 2 +
                  (Vector3.one * startingTile.GetComponent<BoxCollider>().size.z / 2), currentTileDirection);
-            }
-            else
-            {
+            } else {
                 tilePlacementScale = Vector3.Scale((prevTile.GetComponent<Renderer>().bounds.size - (Vector3.one * 2)) +
                  (Vector3.one * startingTile.GetComponent<BoxCollider>().size.z / 2), currentTileDirection);
             }
@@ -86,16 +76,14 @@ namespace EndlessRun
             currentTileLocation += tilePlacementScale;
             int currentPathLength = Random.Range(minimumStraightTiles, maximumStraightTiles);
 
-            for (int i = 0; i < currentPathLength; i++)
-            {
+            for (int i = 0; i < currentPathLength; i++) {
                 SpawnTile(startingTile.GetComponent<Tile>(), (i == 0) ? false : true);
             }
 
             SpawnTile(selectRandomGameObjectFromList(turnTiles).GetComponent<Tile>());
         }
 
-        void SpawnObstacle()
-        {
+        void SpawnObstacle() {
             if (Random.value > spawnChance) return;
 
             GameObject obstaclePrefab = selectRandomGameObjectFromList(obstacles);
@@ -106,8 +94,7 @@ namespace EndlessRun
             currentObstacles.Add(obstacle);
         }
 
-        GameObject selectRandomGameObjectFromList(List<GameObject> list)
-        {
+        GameObject selectRandomGameObjectFromList(List<GameObject> list) {
             if (list.Count == 0) return null;
 
             return list[Random.Range(0, list.Count)];

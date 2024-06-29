@@ -63,11 +63,10 @@ public class GameOver : MonoBehaviour
                 string leaderBoardScore= "";
                 LootLockerLeaderboardMember [] members = response.items;
 
-                for (int i = 0; i < members.Length; i++)
-                {
+                for (int i = 0; i < members.Length; i++) {
                     LootLockerPlayer player = members[i].player;
                     if (player == null) continue;
-                    if (player.name != ""){
+                    if (player.name != "") {
                         leaderBoardName += player.name +"\n";
                     } else {
                         leaderBoardName += player.id + "\n";

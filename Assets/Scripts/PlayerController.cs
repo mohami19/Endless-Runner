@@ -80,11 +80,11 @@ namespace EndlessRun.Player
             string color = "";
             bool? playerSkinRequest = null;
             LootLockerSDKManager.GetSingleKeyPersistentStorage("skin",(response)=>{
-                if(response.success){
+                if(response.success) {
                     Debug.Log("Successfully retrieved player Storage with value" + response.payload.value);
                     color = response.payload.value;
                     playerSkinRequest = true;
-                }else {
+                } else {
                     Debug.Log("UnSuccessfully retrieved player Storage with value" + response.payload.value);
                     playerSkinRequest = false;
                 }
@@ -97,10 +97,61 @@ namespace EndlessRun.Player
             }
         }
 
+        private void TouchMovement() {
+            for (int i = 0; i < Input.touchCount; i++) {
+                if (Input.touches[i].phase == UnityEngine.TouchPhase.Began) {
+                    startPosition = Input.touches[i].position;
+                    Debug.Log("Start Position is : " + startPosition);
+                }
+                if (Input.touches[i].phase == UnityEngine.TouchPhase.Ended) {
+                    endPosition = Input.touches[i].position;
+                    Debug.Log("Start Position is : " + endPosition);
+                    Vector2 distance = endPosition - startPosition;
+                    if (distance.x > threshold) {
+                        float turnValue = 1f;
+                        Vector3? turnPosition = CheckTurn(turnValue);
+                        if (!turnPosition.HasValue) {
+                            GameOver();
+                            return;
+                        }
+                        Vector3 targetDirection = Quaternion.AngleAxis(90 * turnValue, Vector3.up) *
+                            movementDirection;
+
+                        turnEvent.Invoke(targetDirection);
+                        Turn(turnValue, turnPosition.Value);
+                    }
+                    else if (distance.x < -threshold) {
+                        float turnValue = -1f;
+                        Vector3? turnPosition = CheckTurn(turnValue);
+                        if (!turnPosition.HasValue) {
+                            GameOver();
+                            return;
+                        }
+                        Vector3 targetDirection = Quaternion.AngleAxis(90 * turnValue, Vector3.up) *
+                            movementDirection;
+
+                        turnEvent.Invoke(targetDirection);
+                        Turn(turnValue, turnPosition.Value);
+                    }
+                    else if (distance.y > threshold) {
+                        if (IsGrounded()) {
+                            playerVelocity.y += Mathf.Sqrt(jumpHeight * gravity * -3f);
+                            controller.Move(playerVelocity * Time.deltaTime);
+                        }
+                    }
+                    else if (distance.y < -threshold) {
+                        if (!sliding && IsGrounded()) {
+                            StartCoroutine(Slide());
+                        }
+                    }
+                }
+
+            }
+        }
+
         private void PlayerTurn(InputAction.CallbackContext context) {
             Vector3? turnPosition =  CheckTurn(context.ReadValue<float>());
-            if (!turnPosition.HasValue)
-            {
+            if (!turnPosition.HasValue) {
                 GameOver();
                 return;
             }
@@ -140,8 +191,7 @@ namespace EndlessRun.Player
 
         private void PlayerSlide(InputAction.CallbackContext context) {
             
-            if (!sliding && IsGrounded())
-            {
+            if (!sliding && IsGrounded()) {
                 StartCoroutine(Slide());    
             }
 
@@ -169,64 +219,16 @@ namespace EndlessRun.Player
     
         private void PlayerJump(InputAction.CallbackContext context) {
 
-            if (IsGrounded())
-            {
+            if (IsGrounded()) {
                 playerVelocity.y += Mathf.Sqrt(jumpHeight * gravity * -3f);
                 controller.Move(playerVelocity * Time.deltaTime);
             }
         }
 
         // Update is called once per frame
-        private void Update() {
-
-            for (int i = 0; i < Input.touchCount; i++) {
-                if (Input.touches[i].phase == UnityEngine.TouchPhase.Began) {   
-                    startPosition = Input.touches[i].position;
-                    Debug.Log("Start Position is : " + startPosition);
-                }
-                if (Input.touches[i].phase == UnityEngine.TouchPhase.Ended) {   
-                    endPosition = Input.touches[i].position;
-                    Debug.Log("Start Position is : " + endPosition);
-                    Vector2 distance = endPosition - startPosition;
-                    if (distance.x > threshold) {
-                        float turnValue = 1f;
-                        Vector3? turnPosition =  CheckTurn(turnValue);
-                        if (!turnPosition.HasValue)
-                        {
-                            GameOver();
-                            return;
-                        }
-                        Vector3 targetDirection = Quaternion.AngleAxis(90 * turnValue,Vector3.up) *
-                            movementDirection;
-
-                        turnEvent.Invoke(targetDirection);
-                        Turn(turnValue,turnPosition.Value);
-                    } else if (distance.x < -threshold) {
-                        float turnValue = -1f;
-                        Vector3? turnPosition =  CheckTurn(turnValue);
-                        if (!turnPosition.HasValue)
-                        {
-                            GameOver();
-                            return;
-                        }
-                        Vector3 targetDirection = Quaternion.AngleAxis(90 * turnValue,Vector3.up) *
-                            movementDirection;
-
-                        turnEvent.Invoke(targetDirection);
-                        Turn(turnValue,turnPosition.Value);
-                    } else if (distance.y > threshold) {
-                        if (IsGrounded()) {
-                            playerVelocity.y += Mathf.Sqrt(jumpHeight * gravity * -3f);
-                            controller.Move(playerVelocity * Time.deltaTime);
-                        }
-                    } else if (distance.y < -threshold) {
-                        if (!sliding && IsGrounded()){
-                            StartCoroutine(Slide());    
-                        }
-                    }
-                }
-                
-            }
+        private void Update()
+        {
+            TouchMovement();
 
             // if (!IsGrounded(10f)){
             //     GameOver();
@@ -237,20 +239,18 @@ namespace EndlessRun.Player
             scoreUpdateEvent.Invoke((int)score);
 
             controller.Move(transform.forward * playerSpeed * Time.deltaTime);
-            if (IsGrounded() && playerVelocity.y < 0)
-            {
+            if (IsGrounded() && playerVelocity.y < 0) {
                 playerVelocity.y = 0f;
             }
             playerVelocity.y += gravity * Time.deltaTime;
             controller.Move(playerVelocity * Time.deltaTime);
 
-            if (playerSpeed < maxSpeed){
+            if (playerSpeed < maxSpeed) {
                 playerSpeed += Time.deltaTime * speedIncreaseRate;
                 gravity = initialGravityValue - playerSpeed;
 
-                if (animator.speed < 1.25f)
-                {
-                    animator.speed += (1/  playerSpeed) * Time.deltaTime;
+                if (animator.speed < 1.25f) {
+                    animator.speed += (1 / playerSpeed) * Time.deltaTime;
                 }
             }
 
@@ -267,8 +267,7 @@ namespace EndlessRun.Player
             raycastOriginSecond += transform.forward * .2f;
 
             if (Physics.Raycast(raycastOriginFirst, Vector3.down, out RaycastHit hit, length, groundLayer) ||
-                Physics.Raycast(raycastOriginSecond, Vector3.down, out RaycastHit hit2, length, groundLayer))
-            {
+                Physics.Raycast(raycastOriginSecond, Vector3.down, out RaycastHit hit2, length, groundLayer)) {
                 return true;
             }
             return false;
@@ -283,7 +282,7 @@ namespace EndlessRun.Player
 
         private void OnControllerColliderHit(ControllerColliderHit hit) {
         
-            if(((1 <<hit.collider.gameObject.layer) & obstacleLayer) != 0){
+            if(((1 <<hit.collider.gameObject.layer) & obstacleLayer) != 0) {
                 GameOver();    
             }
         }

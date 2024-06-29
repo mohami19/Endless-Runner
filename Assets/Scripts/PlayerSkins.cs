@@ -9,8 +9,8 @@ public class PlayerSkins : MonoBehaviour
     [SerializeField] private GameObject prefab ;
 
     public void GetSkins(){
-        LootLockerSDKManager.GetInventory((response) =>{
-            if(response.success){
+        LootLockerSDKManager.GetInventory((response) => {
+            if(response.success) {
                 Debug.Log("Successfully got the player inventory");
                 LootLockerInventory [] items = response.inventory;
                 for (int i = 0; i < items.Length; i++) {
