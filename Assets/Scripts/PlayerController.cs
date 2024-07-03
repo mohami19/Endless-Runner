@@ -33,7 +33,7 @@ namespace EndlessRun.Player
 
         private Vector3 endPosition;
         private Vector3 startPosition;
-        private float threshold = 250f;
+        [SerializeField] private float threshold = 250f;
 
         private PlayerInput playerInput;
         private InputAction turnAction;
@@ -101,11 +101,9 @@ namespace EndlessRun.Player
             for (int i = 0; i < Input.touchCount; i++) {
                 if (Input.touches[i].phase == UnityEngine.TouchPhase.Began) {
                     startPosition = Input.touches[i].position;
-                    Debug.Log("Start Position is : " + startPosition);
                 }
                 if (Input.touches[i].phase == UnityEngine.TouchPhase.Ended) {
                     endPosition = Input.touches[i].position;
-                    Debug.Log("Start Position is : " + endPosition);
                     Vector2 distance = endPosition - startPosition;
                     if (distance.x > threshold) {
                         float turnValue = 1f;
@@ -225,12 +223,11 @@ namespace EndlessRun.Player
             }
         }
 
-        // Update is called once per frame
         private void Update()
         {
             TouchMovement();
 
-            // if (!IsGrounded(10f)){
+            // if (!IsGrounded(20f)){
             //     GameOver();
             //     return;
             // }
